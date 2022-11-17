@@ -38,7 +38,7 @@ if __name__ == '__main__':
     device        = args.device
 
     model_xml = deep_model
-    model_bin = os.path.splitext(model_xml)[0] + ".bin"
+    model_bin = f"{os.path.splitext(model_xml)[0]}.bin"
 
     ie = IECore()
     net = ie.read_network(model_xml, model_bin)

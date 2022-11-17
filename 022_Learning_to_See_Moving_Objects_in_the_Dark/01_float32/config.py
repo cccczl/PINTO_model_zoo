@@ -18,8 +18,8 @@ DEBUG = False
 
 # train.py ================================================================
 EXP_NAME = '16_bit_HE_to_HE_gt'
-CHECKPOINT_DIR = './1_checkpoint/' + EXP_NAME + '/'
-RESULT_DIR = './2_result/' + EXP_NAME + '/'
+CHECKPOINT_DIR = f'./1_checkpoint/{EXP_NAME}/'
+RESULT_DIR = f'./2_result/{EXP_NAME}/'
 LOGS_DIR = RESULT_DIR
 TRAIN_LOG_DIR = 'train'
 VAL_LOG_DIR = 'val'

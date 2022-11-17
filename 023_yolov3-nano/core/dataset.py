@@ -71,8 +71,8 @@ class Dataset(object):
             batch_mbboxes = np.zeros((self.batch_size, self.max_bbox_per_scale, 4))
             batch_lbboxes = np.zeros((self.batch_size, self.max_bbox_per_scale, 4))
 
-            num = 0
             if self.batch_count < self.num_batchs:
+                num = 0
                 while num < self.batch_size:
                     index = self.batch_count * self.batch_size + num
                     if index >= self.num_samples: index -= self.num_samples
@@ -90,7 +90,7 @@ class Dataset(object):
                     num += 1
                 self.batch_count += 1
                 return batch_image, batch_label_sbbox, batch_label_mbbox, batch_label_lbbox, \
-                       batch_sbboxes, batch_mbboxes, batch_lbboxes
+                           batch_sbboxes, batch_mbboxes, batch_lbboxes
             else:
                 self.batch_count = 0
                 np.random.shuffle(self.annotations)
@@ -158,7 +158,7 @@ class Dataset(object):
         image_path = line[0]
         #image_path = image_path.replace("E","D",1)
         if not os.path.exists(image_path):
-            raise KeyError("%s does not exist ... " %image_path)
+            raise KeyError(f"{image_path} does not exist ... ")
         image = np.array(cv2.imread(image_path))
         #bboxes = np.array([list(map(int, box.split(','))) for box in line[1:]])
         #bboxes = bboxes.T
@@ -203,6 +203,7 @@ class Dataset(object):
         bboxes_xywh = [np.zeros((self.max_bbox_per_scale, 4)) for _ in range(3)]
         bbox_count = np.zeros((3,))
 
+        deta = 0.01
         for bbox in bboxes:
             bbox_coor = bbox[:4]
             bbox_class_ind = bbox[4]
@@ -210,7 +211,6 @@ class Dataset(object):
             onehot = np.zeros(self.num_classes, dtype=np.float)
             onehot[bbox_class_ind] = 1.0
             uniform_distribution = np.full(self.num_classes, 1.0 / self.num_classes)
-            deta = 0.01
             smooth_onehot = onehot * (1 - deta) + deta * uniform_distribution
 
             bbox_xywh = np.concatenate([(bbox_coor[2:] + bbox_coor[:2]) * 0.5, bbox_coor[2:] - bbox_coor[:2]], axis=-1)

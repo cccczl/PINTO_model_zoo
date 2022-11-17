@@ -8,7 +8,7 @@ home = str(Path.home())
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 schema = "schema.fbs"
-binary = home + "/flatc"
+binary = f"{home}/flatc"
 model_path = "posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite"
 output_pb_path = "posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.pb"
 output_savedmodel_path = "saved_model_posenet_mobilenet_v1_100_257x257_multi_kpt_stripped"
@@ -33,17 +33,19 @@ def parse_json():
 
 
 def make_graph(ops, op_types, interpreter):
-    tensors = {}
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
     print(input_details)
-    for input_detail in input_details:
-        tensors[input_detail['index']] = tf.compat.v1.placeholder(
+    tensors = {
+        input_detail['index']: tf.compat.v1.placeholder(
             dtype=input_detail['dtype'],
             shape=input_detail['shape'],
-            name=input_detail['name'])
+            name=input_detail['name'],
+        )
+        for input_detail in input_details
+    }
 
-    for index, op in enumerate(ops):
+    for op in ops:
         print('op: ', op)
         op_type = op_types[op['opcode_index']]
         if op_type == 'CONV_2D':

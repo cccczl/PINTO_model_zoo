@@ -29,17 +29,14 @@ def representative_dataset_gen():
 
 
 def load_file_list(path=None, regx='\\.jpg', printable=True, keep_prefix=False):
-    if path is None:
-        path = os.getcwd()
-    file_list = os.listdir(path)
-    return_list = []
-    for _, f in enumerate(file_list):
-        if re.search(regx, f):
-            return_list.append(f)
-    if keep_prefix:
-        for i, f in enumerate(return_list):
-            return_list[i] = os.path.join(path, f)
-    return return_list
+  if path is None:
+      path = os.getcwd()
+  file_list = os.listdir(path)
+  return_list = [f for f in file_list if re.search(regx, f)]
+  if keep_prefix:
+      for i, f in enumerate(return_list):
+          return_list[i] = os.path.join(path, f)
+  return return_list
 
 
 tf.compat.v1.enable_eager_execution()

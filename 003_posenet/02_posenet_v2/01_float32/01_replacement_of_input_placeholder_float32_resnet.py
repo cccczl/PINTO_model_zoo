@@ -13,7 +13,7 @@ with tf.compat.v1.Session() as sess:
 
     # shape=[1, ?, ?, 3] -> shape=[1, 513, 513, 3]
     # name='image' specifies the placeholder name of the converted model
-    
+
     inputs = tf.compat.v1.placeholder(tf.float32, shape=[1, 513, 513, 3], name='image')
     #inputs = tf.compat.v1.placeholder(tf.float32, shape=[1, 385, 385, 3], name='image')
     #inputs = tf.compat.v1.placeholder(tf.float32, shape=[1, 321, 321, 3], name='image')
@@ -24,7 +24,7 @@ with tf.compat.v1.Session() as sess:
         data = compat.as_bytes(f.read())
         sm = saved_model_pb2.SavedModel()
         sm.ParseFromString(data)
-        if 1 != len(sm.meta_graphs):
+        if len(sm.meta_graphs) != 1:
             print('More than one graph found. Not sure which to write')
             sys.exit(1)
 

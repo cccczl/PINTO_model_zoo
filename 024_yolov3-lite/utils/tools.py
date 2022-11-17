@@ -48,8 +48,7 @@ def iou_calc1(boxes1, boxes2):
     inter_section = np.maximum(right_down - left_up, 0.0)
     inter_area = inter_section[..., 0] * inter_section[..., 1]
     union_area = boxes1_area + boxes2_area - inter_area
-    IOU = 1.0 * inter_area / union_area
-    return IOU
+    return 1.0 * inter_area / union_area
 
 
 def iou_calc2(boxes1, boxes2):
@@ -79,8 +78,7 @@ def iou_calc2(boxes1, boxes2):
     inter_section = np.maximum(right_down - left_up, 0.0)
     inter_area = inter_section[..., 0] * inter_section[..., 1]
     union_area = boxes1_area + boxes2_area - inter_area
-    IOU = 1.0 * inter_area / union_area
-    return IOU
+    return 1.0 * inter_area / union_area
 
 
 def iou_calc3(boxes1, boxes2):
@@ -100,8 +98,7 @@ def iou_calc3(boxes1, boxes2):
     inter_section = tf.maximum(right_down - left_up, 0.0)
     inter_area = inter_section[..., 0] * inter_section[..., 1]
     union_area = boxes1_area + boxes2_area - inter_area
-    IOU = 1.0 * inter_area / union_area
-    return IOU
+    return 1.0 * inter_area / union_area
 
 def iou_calc4(boxes1, boxes2):
     """
@@ -127,8 +124,7 @@ def iou_calc4(boxes1, boxes2):
     inter_section = tf.maximum(right_down - left_up, 0.0)
     inter_area = inter_section[..., 0] * inter_section[..., 1]
     union_area = boxes1_area + boxes2_area - inter_area
-    IOU = 1.0 * inter_area / union_area
-    return IOU
+    return 1.0 * inter_area / union_area
 
 def GIOU(boxes1, boxes2):
     """
@@ -158,9 +154,7 @@ def GIOU(boxes1, boxes2):
     enclose_right_down = tf.maximum(boxes1[..., 2:], boxes2[..., 2:])
     enclose = tf.maximum(enclose_right_down - enclose_left_up, 0.0)
     enclose_area = enclose[..., 0] * enclose[..., 1]
-    GIOU = IOU - 1.0 * (enclose_area - union_area) / enclose_area
-
-    return GIOU
+    return IOU - 1.0 * (enclose_area - union_area) / enclose_area
 
 def nms(bboxes, score_threshold, iou_threshold, sigma=0.3, method='nms'):
     """
@@ -268,7 +262,7 @@ def draw_bbox(original_image, bboxes, classes):
     random.seed(None)
 
     image_h, image_w, _ = original_image.shape
-    for i, bbox in enumerate(bboxes):
+    for bbox in bboxes:
         coor = np.array(bbox[:4], dtype=np.int32)
         score = bbox[4]
         class_ind = int(bbox[5])

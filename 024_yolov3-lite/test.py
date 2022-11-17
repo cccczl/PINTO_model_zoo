@@ -86,7 +86,7 @@ if __name__ == '__main__':
             txt = f.readlines()
             image_inds = [line.strip() for line in txt]
         image_ind = np.random.choice(image_inds)
-        image_path = os.path.join(test_set_path, 'JPEGImages', image_ind + '.jpg')
+        image_path = os.path.join(test_set_path, 'JPEGImages', f'{image_ind}.jpg')
         image = cv2.imread(image_path)
         image = T.detect_image(image)
         cv2.imwrite('detect_result.jpg', image)

@@ -1,7 +1,7 @@
 from PIL import Image
 import os, glob
 import numpy as np
- 
+
 dataset = []
 
 files = glob.glob("images/*.jpg")
@@ -10,6 +10,6 @@ for file in files:
     image = image.convert("RGB")
     data = np.asarray(image)
     dataset.append(data)
- 
+
 dataset = np.array(dataset)
 np.save("face_dataset", dataset)

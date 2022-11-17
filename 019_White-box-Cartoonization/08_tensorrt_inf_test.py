@@ -32,16 +32,20 @@ params = tf.experimental.tensorrt.ConversionParams(precision_mode='FP32', maximu
 converter = tf.experimental.tensorrt.Converter(input_saved_model_dir='saved_model', conversion_params=params)
 converter.convert()
 converter.build(input_fn=input_fn)
-converter.save('tensorrt_saved_model_{}x{}_float32'.format(height, width))
+converter.save(f'tensorrt_saved_model_{height}x{width}_float32')
 
 params = tf.experimental.tensorrt.ConversionParams(precision_mode='FP16', maximum_cached_engines=1000)
 converter = tf.experimental.tensorrt.Converter(input_saved_model_dir='saved_model', conversion_params=params)
 converter.convert()
 converter.build(input_fn=input_fn)
-converter.save('tensorrt_saved_model_{}x{}_float16'.format(height, width))
+converter.save(f'tensorrt_saved_model_{height}x{width}_float16')
 
 
-model = tf.saved_model.load('tensorrt_saved_model_{}x{}_float16'.format(height, width), tags=[tf.saved_model.SERVING])
+model = tf.saved_model.load(
+    f'tensorrt_saved_model_{height}x{width}_float16',
+    tags=[tf.saved_model.SERVING],
+)
+
 infer = model.signatures[tf.saved_model.DEFAULT_SERVING_SIGNATURE_DEF_KEY]
 infer.inputs[0].shape
 x = np.random.uniform(size=(1, height, width, 3)).astype(np.float32)

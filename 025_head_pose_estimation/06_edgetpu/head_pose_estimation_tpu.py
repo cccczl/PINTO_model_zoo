@@ -34,7 +34,6 @@ class FaceDetector:
             print("WARNING: If you want to use Multi-Thread to improve performance on aarch64/armv7l platforms, please refer to one of the below to implement a customized Tensorflow/Tensorflow Lite runtime.")
             print("https://github.com/PINTO0309/Tensorflow-bin.git")
             print("https://github.com/PINTO0309/TensorflowLite-bin.git")
-            pass
         self.interpreter_face_detect.allocate_tensors()
         self.input_details = self.interpreter_face_detect.get_input_details()[0]['index']
         self.box = self.interpreter_face_detect.get_output_details()[0]['index']
@@ -81,22 +80,25 @@ def get_square_box(box):
 
 def draw_annotation_box(image, rotation_vector, translation_vector, camera_matrix, dist_coeefs, color=(255, 255, 255), line_width=2):
     """Draw a 3D box as annotation of pose"""
-    point_3d = []
     rear_size = 75
     rear_depth = 0
-    point_3d.append((-rear_size, -rear_size, rear_depth))
-    point_3d.append((-rear_size, rear_size, rear_depth))
-    point_3d.append((rear_size, rear_size, rear_depth))
-    point_3d.append((rear_size, -rear_size, rear_depth))
-    point_3d.append((-rear_size, -rear_size, rear_depth))
-
     front_size = 100
     front_depth = 100
-    point_3d.append((-front_size, -front_size, front_depth))
-    point_3d.append((-front_size, front_size, front_depth))
-    point_3d.append((front_size, front_size, front_depth))
-    point_3d.append((front_size, -front_size, front_depth))
-    point_3d.append((-front_size, -front_size, front_depth))
+    point_3d = [
+        (-rear_size, -rear_size, rear_depth),
+        (-rear_size, rear_size, rear_depth),
+        (rear_size, rear_size, rear_depth),
+        (rear_size, -rear_size, rear_depth),
+        (-rear_size, -rear_size, rear_depth),
+        *(
+            (-front_size, -front_size, front_depth),
+            (-front_size, front_size, front_depth),
+            (front_size, front_size, front_depth),
+            (front_size, -front_size, front_depth),
+            (-front_size, -front_size, front_depth),
+        ),
+    ]
+
     point_3d = np.array(point_3d, dtype=np.float).reshape(-1, 3)
 
     # Map to 2d image points
@@ -142,8 +144,7 @@ if __name__ == '__main__':
 
     raw_value = []
     with open('model.txt') as file:
-        for line in file:
-            raw_value.append(line)
+        raw_value.extend(iter(file))
     model_points_68 = np.array(raw_value, dtype=np.float32)
     model_points_68 = np.reshape(model_points_68, (3, -1)).T
     # Transform the model into a front view.
@@ -211,13 +212,13 @@ if __name__ == '__main__':
         for i, (box, score) in enumerate(zip(boxes, scores)):
             probability = score
             if probability >= 0.6:
-                if (not math.isnan(box[0]) and
-                   not math.isnan(box[1]) and
-                   not math.isnan(box[2]) and
-                   not math.isnan(box[3])):
-                   pass
-                else:
-                   continue
+                if (
+                    math.isnan(box[0])
+                    or math.isnan(box[1])
+                    or math.isnan(box[2])
+                    or math.isnan(box[3])
+                ):
+                    continue
                 ymin = int(box[0] * image_height)
                 xmin = int(box[1] * image_width)
                 ymax = int(box[2] * image_height)
@@ -229,7 +230,12 @@ if __name__ == '__main__':
 
                 offset_y = int(abs(ymax - ymin) * 0.1)
                 facebox = get_square_box([xmin, ymin + offset_y, xmax, ymax + offset_y])
-                if not (facebox[0] >= 0 and facebox[1] >= 0 and facebox[2] <= image_width and facebox[3] <= image_height):
+                if (
+                    facebox[0] < 0
+                    or facebox[1] < 0
+                    or facebox[2] > image_width
+                    or facebox[3] > image_height
+                ):
                     continue
 
                 face_img = image[facebox[1]:facebox[3], facebox[0]:facebox[2]]

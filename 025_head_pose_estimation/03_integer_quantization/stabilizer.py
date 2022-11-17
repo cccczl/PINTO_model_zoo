@@ -16,7 +16,11 @@ class Stabilizer:
                  cov_measure=0.1):
         """Initialization"""
         # Currently we only support scalar and point, so check user input first.
-        assert state_num == 4 or state_num == 2, "Only scalar and point supported, Check state_num please."
+        assert state_num in [
+            4,
+            2,
+        ], "Only scalar and point supported, Check state_num please."
+
 
         # Store the parameters.
         self.state_num = state_num

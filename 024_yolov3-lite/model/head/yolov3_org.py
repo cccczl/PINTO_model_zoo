@@ -109,8 +109,7 @@ class YOLOV3(object):
         return conv_sbbox, conv_mbbox, conv_lbbox, pred_sbbox, pred_mbbox, pred_lbbox
 
     def __focal(self, target, actual, alpha=1, gamma=2):
-        focal = alpha * tf.pow(tf.abs(target - actual), gamma)
-        return focal
+        return alpha * tf.pow(tf.abs(target - actual), gamma)
 
     def __loss_per_scale(self, name, conv, pred, label, bboxes, stride):
         """

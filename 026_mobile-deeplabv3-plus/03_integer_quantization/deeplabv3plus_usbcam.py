@@ -45,7 +45,6 @@ if __name__ == '__main__':
         print("WARNING: If you want to use Multi-Thread to improve performance on aarch64/armv7l platforms, please refer to one of the below to implement a customized Tensorflow/Tensorflow Lite runtime.")
         print("https://github.com/PINTO0309/Tensorflow-bin.git")
         print("https://github.com/PINTO0309/TensorflowLite-bin.git")
-        pass
     interpreter.allocate_tensors()
     input_details = interpreter.get_input_details()[0]['index']
     deeplabv3_predictions = interpreter.get_output_details()[0]['index']

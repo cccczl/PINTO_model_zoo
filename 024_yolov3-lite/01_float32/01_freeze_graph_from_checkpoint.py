@@ -25,7 +25,7 @@ for node in graphdef.node:
         node.op = 'Switch'
         for index in range(len(node.input)):
             if 'moving_' in node.input[index]:
-                node.input[index] = node.input[index] + '/read'
+                node.input[index] = f'{node.input[index]}/read'
     elif node.op == 'AssignSub':
         node.op = 'Sub'
         if 'use_locking' in node.attr: del node.attr['use_locking']

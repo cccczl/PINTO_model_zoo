@@ -295,6 +295,5 @@ def decode(name, conv_output, num_classes, stride):
         # (3)对probability进行decode
         pred_prob = tf.sigmoid(conv_raw_prob)
 
-        pred_bbox = tf.concat([pred_corner, pred_conf, pred_prob], axis=-1)
-        return pred_bbox
+        return tf.concat([pred_corner, pred_conf, pred_prob], axis=-1)
 

@@ -12,14 +12,9 @@ def resize(all_file):
     nparray = np.array(img)
     nparray = nparray[np.newaxis, :, :, :]
 
-    if tmp is not None:
-        tmp = np.vstack((tmp, nparray))
-        print("tmp.shape=", tmp.shape)
-        np.save('calibration_data_img_person', tmp)
-    else:
-        tmp = nparray.copy()
-        print("tmp.shape=", tmp.shape)
-        np.save('calibration_data_img_person', tmp)
+    tmp = np.vstack((tmp, nparray)) if tmp is not None else nparray.copy()
+    print("tmp.shape=", tmp.shape)
+    np.save('calibration_data_img_person', tmp)
 
 path = "./images/"
 all_file = os.listdir(path)

@@ -65,7 +65,7 @@ def animation(load_folder, save_folder, model_path):
     #            outputs={t.rstrip(":0"):session.graph.get_tensor_by_name(t) for t in outputs}
     #        )
     #        print('Optimized graph converted to SavedModel!')
-    
+
     #shutil.rmtree('./saved_model', ignore_errors=True)
     #convert_graph_def_to_saved_model('./saved_model', './export/white_box_cartoonization_freeze_graph.pb', 'input', ['add_1:0'])
     #sys.exit(0)
@@ -96,7 +96,7 @@ def animation(load_folder, save_folder, model_path):
 
             tensor_input = sess.graph.get_tensor_by_name('import/input:0')
             tensor_output = sess.graph.get_tensor_by_name('import/add_1:0')
-            
+
             cam = cv2.VideoCapture(0)
             cam.set(cv2.CAP_PROP_FPS, 30)
             cam.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
@@ -132,15 +132,35 @@ def animation(load_folder, save_folder, model_path):
                 output = (np.squeeze(output)+1)*127.5
                 output = np.clip(output, 0, 255).astype(np.uint8)
 
-                cv2.putText(output, "---- Animation ---- " + fps, (640 - 550, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (38, 0, 255), 1, cv2.LINE_AA)
+                cv2.putText(
+                    output,
+                    f"---- Animation ---- {fps}",
+                    (640 - 550, 20),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.75,
+                    (38, 0, 255),
+                    1,
+                    cv2.LINE_AA,
+                )
+
                 image = image.astype(np.uint8)
-                cv2.putText(image, "---- Ground truth ---- " + fps, (640 - 550, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (38, 0, 255), 1, cv2.LINE_AA)
+                cv2.putText(
+                    image,
+                    f"---- Ground truth ---- {fps}",
+                    (640 - 550, 20),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.75,
+                    (38, 0, 255),
+                    1,
+                    cv2.LINE_AA,
+                )
+
                 img =  np.hstack((image, output))
                 cv2.imshow('USB Camera', img)
 
                 if cv2.waitKey(1)&0xFF == ord('q'):
                     break
-    
+
 
                 # FPS calculation
                 framecount += 1

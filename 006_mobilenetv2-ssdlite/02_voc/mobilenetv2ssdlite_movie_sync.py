@@ -39,7 +39,6 @@ if __name__ == '__main__':
         print("WARNING: If you want to use Multi-Thread to improve performance on aarch64/armv7l platforms, please refer to one of the below to implement a customized Tensorflow/Tensorflow Lite runtime.")
         print("https://github.com/PINTO0309/Tensorflow-bin.git")
         print("https://github.com/PINTO0309/TensorflowLite-bin.git")
-        pass
     interpreter.allocate_tensors()
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
@@ -92,7 +91,16 @@ if __name__ == '__main__':
                 classnum = int(classidx)
                 #print('coordinates: ({}, {})-({}, {}). class: "{}". probability: {:.2f}'.format(xmin, ymin, xmax, ymax, classnum, score))
                 cv2.rectangle(image, (xmin, ymin), (xmax, ymax), (0, 255, 0), 2)
-                cv2.putText(image, '{}: {:.2f}'.format(LABELS[classnum], score), (xmin, ymin - 5), cv2.FONT_HERSHEY_COMPLEX, 0.8, (0, 255, 0), 2)
+                cv2.putText(
+                    image,
+                    '{}: {:.2f}'.format(LABELS[classnum], probability),
+                    (xmin, ymin - 5),
+                    cv2.FONT_HERSHEY_COMPLEX,
+                    0.8,
+                    (0, 255, 0),
+                    2,
+                )
+
                 cv2.putText(image, fps, (image_width - 170, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (38, 0, 255), 1, cv2.LINE_AA)
                 cv2.putText(image, detectfps, (image_width - 170, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (38, 0, 255), 1, cv2.LINE_AA)
             if i >= (count - 1):

@@ -77,16 +77,16 @@ def process_video(sess, in_image, out_image, in_file, raw, out_file=None):
     k = 0
     step = 1 - OVERLAP
     output = np.zeros([input_patch.shape[0], input_patch.shape[1] * 2, input_patch.shape[2] * 2, 3], dtype='uint16')
-    i_range, j_range, k_range = input_patch.shape[0:3]
+    i_range, j_range, k_range = input_patch.shape[:3]
     weights = np.zeros(output.shape, dtype='uint8')
-    
+
     # 16 bit
     max_val = 65535.0
     scaling_factor = max_val
     val_type = 'uint16'
-    
+
     input_patch = equalize_histogram(input_patch, int(max_val) + 1)
-    
+
     tmp = None
     done = False
     while i < i_range:
@@ -114,16 +114,9 @@ def process_video(sess, in_image, out_image, in_file, raw, out_file=None):
                 network_input = np.minimum(network_input / scaling_factor, 1.0)
 
 
-                if tmp is not None:
-                    tmp = np.vstack((tmp, network_input))
-                    print("tmp.shape=", tmp.shape)
-                    np.save('calibration_data', tmp)
-                else:
-                    tmp = network_input.copy()
-                    print("tmp.shape=", tmp.shape)
-                    np.save('calibration_data', tmp)
-
-
+                tmp = network_input.copy() if tmp is None else np.vstack((tmp, network_input))
+                print("tmp.shape=", tmp.shape)
+                np.save('calibration_data', tmp)
                 if DEBUG:
                     print('[DEBUG] network_input.shape:', network_input.shape)
                 network_output = sess.run(out_image, feed_dict={in_image: network_input})
@@ -145,7 +138,7 @@ def process_video(sess, in_image, out_image, in_file, raw, out_file=None):
     output = (output / weights).astype('uint8')
 
     if out_file is None:
-        out_file = os.path.basename(in_file)[:-4] + '.mp4'
+        out_file = f'{os.path.basename(in_file)[:-4]}.mp4'
         if DEBUG:
             print('[DEBUG] out_file:', out_file)
     t0 =  time.time()
@@ -186,13 +179,21 @@ def main():
                         process_video(sess, in_image, out_image, new_filename, raw[begin_frame: begin_frame + MAX_FRAME, :, :, :])
                         count += 1
                         begin_frame += MAX_FRAME
-                        print('\t{}s'.format(time.time() - t1))
+                        print(f'\t{time.time() - t1}s')
                 else:
-                    process_video(sess, in_image, out_image, file0, raw, out_file=train_ids[i] + '.mp4')
-                print(train_ids[i], '\t{}s'.format(time.time() - t0))
+                    process_video(
+                        sess,
+                        in_image,
+                        out_image,
+                        file0,
+                        raw,
+                        out_file=f'{train_ids[i]}.mp4',
+                    )
+
+                print(train_ids[i], f'\t{time.time() - t0}s')
 
 
 if __name__ == '__main__':
     t0 = time.time()
     main()
-    print('total time: {}s'.format(time.time() - t0))
+    print(f'total time: {time.time() - t0}s')

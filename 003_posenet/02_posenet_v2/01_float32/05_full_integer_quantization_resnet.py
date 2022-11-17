@@ -11,8 +11,8 @@ def representative_dataset_gen():
     image_size = 225
     raw_test_data = []
     for name in folder:
-        dir = "./" + name
-        files = glob.glob(dir + "/*.jpg")
+        dir = f"./{name}"
+        files = glob.glob(f"{dir}/*.jpg")
         for file in files:
             image = Image.open(file)
             image = image.convert("RGB")

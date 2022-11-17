@@ -141,9 +141,11 @@ def _fixed_padding(inputs, kernel_size, *args, mode='CONSTANT', **kwargs):
     pad_beg = pad_total // 2#“//”表示整数出发，返回一个不大于结果的整数值
     pad_end = pad_total - pad_beg
 
-    padded_inputs = tf.pad(inputs, [[0, 0], [pad_beg, pad_end],
-                                    [pad_beg, pad_end], [0, 0]], mode=mode)
-    return padded_inputs
+    return tf.pad(
+        inputs,
+        [[0, 0], [pad_beg, pad_end], [pad_beg, pad_end], [0, 0]],
+        mode=mode,
+    )
 
 def _avgpool_fixed_padding(inputs, kernel_size, strides=1):
     if strides!=1: 
@@ -159,7 +161,7 @@ def _avgpool_fixed_padding(inputs, kernel_size, strides=1):
 
 def AdaptiveAvgPool2d(input_data,output_size):
     h=input_data.get_shape().as_list()[1]
-    if h==None:
+    if h is None:
         h=1
     #print(h)
     #h=52
@@ -174,10 +176,7 @@ def sepconv(input_data,input_channels,output_channels,name,stride=1,expand_ratio
     with tf.variable_scope(name):
         input_data = convolutional(input_data, filters_shape=(1, 1, input_channels, input_channels*expand_ratio), trainable=trainable, name='conv1')
         #print(input_data.shape)
-        if stride==2:
-            ifdownsample=True
-        else:
-            ifdownsample=False
+        ifdownsample = stride == 2
         input_data = DW_convolutional(input_data, filters_shape=(3, 3, input_channels, expand_ratio), trainable=True, name='DWconv2', downsample=ifdownsample, activate=True, bn=True)
         #print(input_data.shape)
         input_data = convolutional(input_data, filters_shape=(1, 1, input_channels*expand_ratio,output_channels), trainable=trainable, name='conv3',activate=True)
@@ -204,7 +203,7 @@ def PEP(input_data,input_channels,output_channels,middle_channels,name,stride=1,
 def fcn_layer(input_data,input_dims,output_dims,activation=None):
     W=tf.Variable(tf.truncated_normal([input_dims,output_dims],stddev=0.1))
     input_data=tf.matmul(input_data,W);
-    if activation==None:
+    if activation is None:
         return input_data
     else:
         input_data=activation(input_data)
@@ -214,7 +213,7 @@ def FCA_A(input_data,channels,reduction_ratio):
     x=input_data
     b,h,w,c=input_data.shape
     #print(type(b))
-    if b==None:
+    if b is None:
         b=1
         h=0
         w=0

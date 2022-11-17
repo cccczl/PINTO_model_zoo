@@ -11,15 +11,15 @@ with tf.Session() as sess:
     graph_def.ParseFromString(f.read())
     sess.graph.as_default()
     tf.import_graph_def(graph_def, name='')
-    graph_nodes=[n for n in graph_def.node]
+    graph_nodes = list(graph_def.node)
     wts = [n for n in graph_nodes if n.op=='Const']
     for n in wts:
-        if n.name == 'anchors':
-            print("Name of the node - %s" % n.name)
-            print("Value - ")
-            anchors = tensor_util.MakeNdarray(n.attr['value'].tensor)
-            print("anchors.shape =", anchors.shape)
-            print(anchors)
-            np.save('./anchors.npy', anchors)
-            np.savetxt('./anchors.csv', anchors, delimiter=',')
-            break
+      if n.name == 'anchors':
+        print(f"Name of the node - {n.name}")
+        print("Value - ")
+        anchors = tensor_util.MakeNdarray(n.attr['value'].tensor)
+        print("anchors.shape =", anchors.shape)
+        print(anchors)
+        np.save('./anchors.npy', anchors)
+        np.savetxt('./anchors.csv', anchors, delimiter=',')
+        break

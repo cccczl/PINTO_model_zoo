@@ -125,10 +125,10 @@ class YoloTrain(object):
     def train(self):
         self.sess.run(tf.global_variables_initializer())
         try:
-            print('=> Restoring weights from: %s ... ' % self.initial_weight)
+            print(f'=> Restoring weights from: {self.initial_weight} ... ')
             self.loader.restore(self.sess, self.initial_weight)
         except:
-            print('=> %s does not exist !!!' % self.initial_weight)
+            print(f'=> {self.initial_weight} does not exist !!!')
             print('=> Now it starts to train YOLOV3 from scratch ...')
             self.first_stage_epochs = 0
 

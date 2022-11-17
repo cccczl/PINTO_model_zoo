@@ -7,7 +7,7 @@ path = []
 name = []
 bbox = []
 with open("./voc_train.txt","r") as vocfile: ##change your file‘s path
-    for lines in vocfile.readlines():
+    for lines in vocfile:
         line = lines.split(' ')
         path.append(line[0])
         name.append(line[0].split('/')[-1])
@@ -21,9 +21,24 @@ with open("./voc_train.txt","r") as vocfile: ##change your file‘s path
         for box in bbox[i]:
             if box[0] < 0 or box[0] > shape[1] or box[2] < 0 or box[2] > shape[1] or box[1] < 0 or box[1] > shape[0] or box[3] < 0 or box[3] > shape[0] or box[4] != 0:
                 wrongnames.append(name[i])
-                print(name[i] + " wrong:", "b0", box[0], "b1", box[1], "b2", box[2], "b3", box[3], "b4", box[4], shape[0], shape[1])
+                print(
+                    f"{name[i]} wrong:",
+                    "b0",
+                    box[0],
+                    "b1",
+                    box[1],
+                    "b2",
+                    box[2],
+                    "b3",
+                    box[3],
+                    "b4",
+                    box[4],
+                    shape[0],
+                    shape[1],
+                )
+
             else:
-                print(str(i) + " right")
+                print(f"{str(i)} right")
                 print("done")
         sys.exit(0)
 

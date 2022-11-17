@@ -23,7 +23,6 @@ if __name__ == '__main__':
         print("WARNING: If you want to use Multi-Thread to improve performance on aarch64/armv7l platforms, please refer to one of the below to implement a customized Tensorflow/Tensorflow Lite runtime.")
         print("https://github.com/PINTO0309/Tensorflow-bin.git")
         print("https://github.com/PINTO0309/TensorflowLite-bin.git")
-        pass
     interpreter.allocate_tensors()
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
@@ -59,12 +58,12 @@ if __name__ == '__main__':
     for i, (box, classidx, score) in enumerate(zip(boxes, classes, scores)):
         probability = score
         if probability >= 0.6:
-            if (not math.isnan(box[0]) and
-                not math.isnan(box[1]) and
-                not math.isnan(box[2]) and
-                not math.isnan(box[3])):
-                pass
-            else:
+            if (
+                math.isnan(box[0])
+                or math.isnan(box[1])
+                or math.isnan(box[2])
+                or math.isnan(box[3])
+            ):
                 continue
             ymin = int(box[0] * image_height)
             xmin = int(box[1] * image_width)

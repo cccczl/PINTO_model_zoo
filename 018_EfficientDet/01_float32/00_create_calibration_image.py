@@ -9,20 +9,15 @@ def resize(all_file):
 
   tmp = None
   height, width = 256, 256
-  for i, f in enumerate(all_file):
+  for f in all_file:
     img = Image.open(f)
     img = img.resize(size=(height, width))
     nparray = np.array(img).astype(np.float32)
     nparray = nparray[np.newaxis, :, :, :]
 
-    if tmp is not None:
-        tmp = np.vstack((tmp, nparray))
-        print("tmp.shape=", tmp.shape, f)
-        np.save('calibration_data_img_coco_' + str(height) + 'x' + str(width), tmp)
-    else:
-        tmp = nparray.copy()
-        print("tmp.shape=", tmp.shape, f)
-        np.save('calibration_data_img_coco_' + str(height) + 'x' + str(width), tmp)
+    tmp = np.vstack((tmp, nparray)) if tmp is not None else nparray.copy()
+    print("tmp.shape=", tmp.shape, f)
+    np.save(f'calibration_data_img_coco_{height}x{width}', tmp)
 
 path = "./work/"
 all_file = os.listdir(path)

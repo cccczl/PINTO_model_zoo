@@ -58,9 +58,9 @@ class Data(object):
 
         annotations = []
         for image_ind in image_inds:
-            image_path = os.path.join(data_path, 'JPEGImages', image_ind + '.jpg')
+            image_path = os.path.join(data_path, 'JPEGImages', f'{image_ind}.jpg')
             annotation = image_path
-            label_path = os.path.join(data_path, 'Annotations', image_ind + '.xml')
+            label_path = os.path.join(data_path, 'Annotations', f'{image_ind}.xml')
             root = ET.parse(label_path).getroot()
             objects = root.findall('object')
             for obj in objects:
@@ -103,14 +103,14 @@ class Data(object):
                                           self.__gt_per_grid, 6 + self.__num_classes))
             batch_label_lbbox = np.zeros((self.__batch_size, self.__train_output_sizes[2], self.__train_output_sizes[2],
                                           self.__gt_per_grid, 6 + self.__num_classes))
-            temp_batch_sbboxes = []
-            temp_batch_mbboxes = []
-            temp_batch_lbboxes = []
             max_sbbox_per_img = 0
             max_mbbox_per_img = 0
             max_lbbox_per_img = 0
-            num = 0
             if self.__batch_count < self.__num_batchs:
+                temp_batch_sbboxes = []
+                temp_batch_mbboxes = []
+                temp_batch_lbboxes = []
+                num = 0
                 while num < self.__batch_size:
                     index = self.__batch_count * self.__batch_size + num
                     if index >= self.__num_samples:
@@ -161,7 +161,7 @@ class Data(object):
                                           for lbboxes in temp_batch_lbboxes])
                 self.__batch_count += 1
                 return batch_image, batch_label_sbbox, batch_label_mbbox, batch_label_lbbox, \
-                       batch_sbboxes, batch_mbboxes, batch_lbboxes
+                           batch_sbboxes, batch_mbboxes, batch_lbboxes
             else:
                 self.__batch_count = 0
                 np.random.shuffle(self.__annotations)
@@ -213,6 +213,7 @@ class Data(object):
         bboxes_coor = [[] for _ in range(3)]
         bboxes_count = [np.zeros((self.__train_output_sizes[i], self.__train_output_sizes[i])) for i in range(3)]
 
+        deta = 0.01
         for bbox in bboxes:
             # (1)获取bbox在原图上的顶点坐标、类别索引、mix up权重、中心坐标、高宽、尺度
             bbox_coor = bbox[:4]
@@ -226,12 +227,11 @@ class Data(object):
             onehot = np.zeros(self.__num_classes, dtype=np.float)
             onehot[bbox_class_ind] = 1.0
             uniform_distribution = np.full(self.__num_classes, 1.0 / self.__num_classes)
-            deta = 0.01
             smooth_onehot = onehot * (1 - deta) + deta * uniform_distribution
 
             if bbox_scale <= 30:
                 match_branch = 0
-            elif (30 < bbox_scale) and (bbox_scale <= 90):
+            elif bbox_scale <= 90:
                 match_branch = 1
             else:
                 match_branch = 2

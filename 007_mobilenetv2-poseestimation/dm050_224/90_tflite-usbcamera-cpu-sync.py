@@ -49,7 +49,7 @@ def getValidPairs(outputs, w, h):
         nA = len(candA)
         nB = len(candB)
 
-        if( nA != 0 and nB != 0):
+        if ( nA != 0 and nB != 0):
             valid_pair = np.zeros((0,3))
             for i in range(nA):
                 max_j=-1
@@ -57,25 +57,30 @@ def getValidPairs(outputs, w, h):
                 found = 0
                 for j in range(nB):
                     d_ij = np.subtract(candB[j][:2], candA[i][:2])
-                    norm = np.linalg.norm(d_ij)
-                    if norm:
+                    if norm := np.linalg.norm(d_ij):
                         d_ij = d_ij / norm
                     else:
                         continue
                     interp_coord = list(zip(np.linspace(candA[i][0], candB[j][0], num=n_interp_samples),
                                             np.linspace(candA[i][1], candB[j][1], num=n_interp_samples)))
-                    paf_interp = []
-                    for k in range(len(interp_coord)):
-                        paf_interp.append([pafA[int(round(interp_coord[k][1])), int(round(interp_coord[k][0]))],
-                                           pafB[int(round(interp_coord[k][1])), int(round(interp_coord[k][0]))] ])
+                    paf_interp = [
+                        [
+                            pafA[int(round(item[1])), int(round(item[0]))],
+                            pafB[int(round(item[1])), int(round(item[0]))],
+                        ]
+                        for item in interp_coord
+                    ]
+
                     paf_scores = np.dot(paf_interp, d_ij)
                     avg_paf_score = sum(paf_scores)/len(paf_scores)
 
-                    if ( len(np.where(paf_scores > paf_score_th)[0]) / n_interp_samples ) > conf_th :
-                        if avg_paf_score > maxScore:
-                            max_j = j
-                            maxScore = avg_paf_score
-                            found = 1
+                    if (
+                        len(np.where(paf_scores > paf_score_th)[0])
+                        / n_interp_samples
+                    ) > conf_th and avg_paf_score > maxScore:
+                        max_j = j
+                        maxScore = avg_paf_score
+                        found = 1
                 if found:
                     valid_pair = np.append(valid_pair, [[candA[i][3], candB[max_j][3], maxScore]], axis=0)
 
@@ -108,7 +113,7 @@ def getPersonwiseKeypoints(valid_pairs, invalid_pairs):
                     personwiseKeypoints[person_idx][indexB] = partBs[i]
                     personwiseKeypoints[person_idx][-1] += keypoints_list[partBs[i].astype(int), 2] + valid_pairs[k][i][2]
 
-                elif not found and k < 17:
+                elif k < 17:
                     row = -1 * np.ones(19)
                     row[indexA] = partAs[i]
                     row[indexB] = partBs[i]
@@ -145,14 +150,13 @@ cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 interpreter = Interpreter(model_path="mobilenet_v2_pose_256_256_dm050_integer_quant.tflite")
 interpreter.allocate_tensors()
 try:
-    interpreter.set_num_threads(int(num_threads))
+    interpreter.set_num_threads(num_threads)
 except:
     print("WARNING: The installed PythonAPI of Tensorflow/Tensorflow Lite runtime does not support Multi-Thread processing.")
     print("WARNING: It works in single thread mode.")
     print("WARNING: If you want to use Multi-Thread to improve performance on aarch64/armv7l platforms, please refer to one of the below to implement a customized Tensorflow/Tensorflow Lite runtime.")
     print("https://github.com/PINTO0309/Tensorflow-bin.git")
     print("https://github.com/PINTO0309/TensorflowLite-bin.git")
-    pass
 input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
 input_shape = input_details[0]['shape']
@@ -208,7 +212,15 @@ try:
         frameClone = np.uint8(canvas.copy())
         for i in range(nPoints):
             for j in range(len(detected_keypoints[i])):
-                cv2.circle(frameClone, detected_keypoints[i][j][0:2], 5, colors[i], -1, cv2.LINE_AA)
+                cv2.circle(
+                    frameClone,
+                    detected_keypoints[i][j][:2],
+                    5,
+                    colors[i],
+                    -1,
+                    cv2.LINE_AA,
+                )
+
 
         valid_pairs, invalid_pairs = getValidPairs(outputs, w, h)
         personwiseKeypoints = getPersonwiseKeypoints(valid_pairs, invalid_pairs)

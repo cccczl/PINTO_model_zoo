@@ -10,8 +10,10 @@ with tf.compat.v1.Session() as sess:
         graph_def.ParseFromString(f.read())
         sess.graph.as_default()
         _ = tf.import_graph_def(graph_def)
-        ops = {}
-        for op in tf.compat.v1.get_default_graph().get_operations():
-            ops[op.name] = [str(output) for output in op.outputs]
+        ops = {
+            op.name: [str(output) for output in op.outputs]
+            for op in tf.compat.v1.get_default_graph().get_operations()
+        }
+
         with open('./yolov3_nano_256.json', 'w') as f:
             f.write(json.dumps(ops))

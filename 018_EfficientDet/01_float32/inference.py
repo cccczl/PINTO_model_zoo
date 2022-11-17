@@ -147,8 +147,7 @@ def build_inputs(image_path_pattern: Text, image_size: Union[int, Tuple[int,
     images.append(image)
     scales.append(scale)
   if not images:
-    raise ValueError(
-        'Cannot find any images for pattern {}'.format(image_path_pattern))
+    raise ValueError(f'Cannot find any images for pattern {image_path_pattern}')
   return raw_images, tf.stack(images), tf.stack(scales)
 
 
@@ -165,7 +164,7 @@ def build_model(model_name: Text, inputs: tf.Tensor, **kwargs):
     Each is a dictionary with key as feature level and value as predictions.
   """
   model_arch = det_model_fn.get_model_arch(model_name)
-  mixed_precision = kwargs.get('mixed_precision', None)
+  mixed_precision = kwargs.get('mixed_precision')
   precision = utils.get_precision(kwargs.get('strategy', None), mixed_precision)
   cls_outputs, box_outputs = utils.build_model_with_precision(
       precision, model_arch, inputs, False, model_name, **kwargs)
@@ -210,7 +209,7 @@ def restore_ckpt(sess, ckpt_path, ema_decay=0.9998, export_ckpt=None):
   saver.restore(sess, ckpt_path)
 
   if export_ckpt:
-    print('export model to {}'.format(export_ckpt))
+    print(f'export model to {export_ckpt}')
     if ema_assign_op is not None:
       sess.run(ema_assign_op)
     saver = tf.train.Saver(max_to_keep=1, save_relative_paths=True)
@@ -267,8 +266,7 @@ def det_post_process_combined(params, cls_outputs, box_outputs, scales,
 
   classes = tf.cast(nmsed_classes + 1, tf.float32)
   detection_list = [image_ids, ymin, xmin, ymax, xmax, nmsed_scores, classes]
-  detections = tf.stack(detection_list, axis=2, name='detections')
-  return detections
+  return tf.stack(detection_list, axis=2, name='detections')
 
 
 def det_post_process(params: Dict[Any, Any], cls_outputs: Dict[int, tf.Tensor],
@@ -601,10 +599,10 @@ class ServingDriver(object):
     """
     if not self.sess:
       self.build()
-    predictions = self.sess.run(
+    return self.sess.run(
         self.signitures['prediction'],
-        feed_dict={self.signitures['image_files']: image_files})
-    return predictions
+        feed_dict={self.signitures['image_files']: image_files},
+    )
 
   def benchmark(self, image_arrays, trace_filename=None):
     """Benchmark inference latency/throughput.
@@ -657,10 +655,10 @@ class ServingDriver(object):
     """
     if not self.sess:
       self.build()
-    predictions = self.sess.run(
+    return self.sess.run(
         self.signitures['prediction'],
-        feed_dict={self.signitures['image_arrays']: image_arrays})
-    return predictions
+        feed_dict={self.signitures['image_arrays']: image_arrays},
+    )
 
   def load(self, saved_model_dir_or_frozen_graph: Text):
     """Load the model using saved model or a frozen graph."""
@@ -686,9 +684,8 @@ class ServingDriver(object):
   def freeze(self):
     """Freeze the graph."""
     output_names = [self.signitures['prediction'].op.name]
-    graphdef = tf.graph_util.convert_variables_to_constants(
+    return tf.graph_util.convert_variables_to_constants(
         self.sess, self.sess.graph_def, output_names)
-    return graphdef
 
   def export(self,
              output_dir: Text,
@@ -723,7 +720,7 @@ class ServingDriver(object):
 
     # also save freeze pb file.
     graphdef = self.freeze()
-    pb_path = os.path.join(output_dir, self.model_name + '_frozen.pb')
+    pb_path = os.path.join(output_dir, f'{self.model_name}_frozen.pb')
     tf.io.gfile.GFile(pb_path, 'wb').write(graphdef.SerializeToString())
     logging.info('Frozen graph saved at %s', pb_path)
 
@@ -756,9 +753,11 @@ class ServingDriver(object):
       converter.optimizations = [tf.lite.Optimize.OPTIMIZE_FOR_SIZE]
       # converter.experimental_new_converter = True
       tflite_quant_model = converter.convert()
-      with open('efficientdet_d0_' + str(height) + 'x' + str(width) + '_weight_quant.tflite', 'wb') as w:
-          w.write(tflite_quant_model)
-      print('Weight Quantization complete! - efficientdet_d0_' + str(height) + 'x' + str(width) + '_weight_quant.tflite')
+      with open(f'efficientdet_d0_{height}x{width}_weight_quant.tflite', 'wb') as w:
+        w.write(tflite_quant_model)
+      print(
+          f'Weight Quantization complete! - efficientdet_d0_{height}x{width}_weight_quant.tflite'
+      )
 
       # Float16 Quantization - Input/Output=float32
       converter = tf.lite.TFLiteConverter.from_saved_model(
@@ -769,9 +768,11 @@ class ServingDriver(object):
       converter.optimizations = [tf.lite.Optimize.DEFAULT]
       converter.target_spec.supported_types = [tf.float16]
       tflite_quant_model = converter.convert()
-      with open('efficientdet_d0_' + str(height) + 'x' + str(width) + '_float16_quant.tflite', 'wb') as w:
-          w.write(tflite_quant_model)
-      print('Float16 Quantization complete! - efficientdet_d0_' + str(height) + 'x' + str(width) + '_float16_quant.tflite')
+      with open(f'efficientdet_d0_{height}x{width}_float16_quant.tflite', 'wb') as w:
+        w.write(tflite_quant_model)
+      print(
+          f'Float16 Quantization complete! - efficientdet_d0_{height}x{width}_float16_quant.tflite'
+      )
 
       # Integer Quantization - Input/Output=float32
       def representative_dataset_gen():
@@ -784,7 +785,8 @@ class ServingDriver(object):
           image = image.astype(np.float32)
           yield [image]
 
-      raw_test_data = np.load('calibration_data_img_coco_' + str(height) + 'x' + str(width) + '.npy', allow_pickle=True)
+      raw_test_data = np.load(
+          f'calibration_data_img_coco_{height}x{width}.npy', allow_pickle=True)
 
       converter = tf.lite.TFLiteConverter.from_saved_model(
           output_dir,
@@ -794,31 +796,33 @@ class ServingDriver(object):
       converter.optimizations = [tf.lite.Optimize.DEFAULT]
       converter.representative_dataset = representative_dataset_gen
       tflite_quant_model = converter.convert()
-      with open('efficientdet_d0_' + str(height) + 'x' + str(width) + '_integer_quant.tflite', 'wb') as w:
-          w.write(tflite_quant_model)
-      print('Integer Quantization complete! - efficientdet_d0_' + str(height) + 'x' + str(width) + '_integer_quant.tflite')
+      with open(f'efficientdet_d0_{height}x{width}_integer_quant.tflite', 'wb') as w:
+        w.write(tflite_quant_model)
+      print(
+          f'Integer Quantization complete! - efficientdet_d0_{height}x{width}_integer_quant.tflite'
+      )
 
-      # # Full Integer Quantization - Input/Output=float32
-      # converter = tf.lite.TFLiteConverter.from_saved_model(
-      #     output_dir,
-      #     input_arrays=[input_name],
-      #     input_shapes=input_shapes,
-      #     output_arrays=[signitures['prediction'].op.name])
-      # converter.optimizations = [tf.lite.Optimize.DEFAULT]
-      # converter.representative_dataset = representative_dataset_gen
-      # converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
-      # converter.inference_input_type = tf.uint8
-      # converter.inference_output_type = tf.uint8
-      # tflite_quant_model = converter.convert()
-      # with open('efficientdet_d0_' + str(height) + 'x' + str(width) + '_full_integer_quant.tflite', 'wb') as w:
-      #     w.write(tflite_quant_model)
-      # print('Full Integer Quantization complete! - efficientdet_d0_' + str(height) + 'x' + str(width) + '_full_integer_quant.tflite')
-      ###################################################################################
+        # # Full Integer Quantization - Input/Output=float32
+        # converter = tf.lite.TFLiteConverter.from_saved_model(
+        #     output_dir,
+        #     input_arrays=[input_name],
+        #     input_shapes=input_shapes,
+        #     output_arrays=[signitures['prediction'].op.name])
+        # converter.optimizations = [tf.lite.Optimize.DEFAULT]
+        # converter.representative_dataset = representative_dataset_gen
+        # converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
+        # converter.inference_input_type = tf.uint8
+        # converter.inference_output_type = tf.uint8
+        # tflite_quant_model = converter.convert()
+        # with open('efficientdet_d0_' + str(height) + 'x' + str(width) + '_full_integer_quant.tflite', 'wb') as w:
+        #     w.write(tflite_quant_model)
+        # print('Full Integer Quantization complete! - efficientdet_d0_' + str(height) + 'x' + str(width) + '_full_integer_quant.tflite')
+        ###################################################################################
 
     if tensorrt:
       from tensorflow.python.compiler.tensorrt import trt  # pylint: disable=g-direct-tensorflow-import,g-import-not-at-top
       sess_config = tf.ConfigProto(gpu_options=tf.GPUOptions(allow_growth=True))
-      trt_path = os.path.join(output_dir, 'tensorrt_' + tensorrt.lower())
+      trt_path = os.path.join(output_dir, f'tensorrt_{tensorrt.lower()}')
       trt.create_inference_graph(
           None,
           None,
@@ -912,7 +916,7 @@ class InferenceDriver(object):
             disable_pyfun=self.disable_pyfun,
             label_id_mapping=self.label_id_mapping,
             **kwargs)
-        output_image_path = os.path.join(output_dir, str(i) + '.jpg')
+        output_image_path = os.path.join(output_dir, f'{str(i)}.jpg')
         Image.fromarray(img).save(output_image_path)
         logging.info('writing file to %s', output_image_path)
 

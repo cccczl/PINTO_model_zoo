@@ -15,11 +15,14 @@ model_path = "model/"
 if os.path.exists(model_path):
     # load csv 
     print("csv loading...")
-    channel_weight = np.loadtxt(model_path + "channel_weight.csv", delimiter=",")
-    channel_adress = np.loadtxt(model_path + "channel_adress.csv", delimiter=",", dtype="float")
+    channel_weight = np.loadtxt(f"{model_path}channel_weight.csv", delimiter=",")
+    channel_adress = np.loadtxt(
+        f"{model_path}channel_adress.csv", delimiter=",", dtype="float"
+    )
+
     channel_adress = channel_adress.astype(np.int)
-    vector_pa = np.loadtxt(model_path + "vector_pa.csv", delimiter=",")
-    kmeans = joblib.load(model_path + "k-means.pkl.cmp")
+    vector_pa = np.loadtxt(f"{model_path}vector_pa.csv", delimiter=",")
+    kmeans = joblib.load(f"{model_path}k-means.pkl.cmp")
 
 else:
     print("Nothing model folder")
@@ -37,8 +40,7 @@ def cosine_similarity(x1, x2):
         x2 = x2[np.newaxis]
     x1_norm = np.linalg.norm(x1, axis=1)
     x2_norm = np.linalg.norm(x2, axis=1)
-    cosine_sim = np.dot(x1, x2.T)/(x1_norm*x2_norm+1e-10)
-    return cosine_sim
+    return np.dot(x1, x2.T)/(x1_norm*x2_norm+1e-10)
 
 def predict_faster_gradcam(channel, vector, img, kmeans, channel_weight, channel_adress):
     channel_out = channel[0]
@@ -90,7 +92,10 @@ def main():
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, camera_width)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, camera_height)
 
-    interpreter = Interpreter(model_path=model_path + "weights_weight_quant.tflite")
+    interpreter = Interpreter(
+        model_path=f"{model_path}weights_weight_quant.tflite"
+    )
+
     try:
         interpreter.set_num_threads(4)
     except:
@@ -153,11 +158,7 @@ def main():
         if key == ord("q"):
             break
         if key == ord("s"):
-            if like_OD == True:
-                like_OD = False
-            else:
-                like_OD = True
-
+            like_OD = like_OD != True
     cv2.destroyAllWindows()
 
 if __name__ == '__main__':
